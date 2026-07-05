@@ -1,0 +1,12 @@
+[project]
+name = "line-rag-qa-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.115.0",
+    "fastapi>=0.138.2",
+    "line-bot-sdk>=3.23.1",
+    "uvicorn[standard]>=0.49.0",
+]
