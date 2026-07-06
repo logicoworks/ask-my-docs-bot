@@ -52,5 +52,6 @@ def list_documents() -> dict[str, int]:
     return counts
 
 
-def delete_document(filename: str) -> None:
-    _collection.delete(where={"filename": filename})
+def delete_document(filename: str) -> int:
+    result = _collection.delete(where={"filename": filename})
+    return result["deleted"]
