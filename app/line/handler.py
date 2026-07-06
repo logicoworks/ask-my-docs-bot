@@ -37,8 +37,11 @@ def handle_text_message(event: MessageEvent) -> None:
         reply_text = format_document_list()
     elif text.startswith(DELETE_PREFIX):
         filename = text[len(DELETE_PREFIX) :].strip()
-        delete_document(filename)
-        reply_text = f"「{filename}」を削除しました。"
+        deleted_count = delete_document(filename)
+        if deleted_count > 0:
+            reply_text = f"「{filename}」を削除しました。"
+        else:
+            reply_text = f"「{filename}」という文書は見つかりませんでした。"
     else:
         reply_text = answer_question(text)
 
