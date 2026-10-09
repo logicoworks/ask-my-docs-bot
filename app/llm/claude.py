@@ -33,7 +33,7 @@ def ask_claude(user_text: str) -> str:
     try:
         message = client.messages.create(
             model=MODEL,
-            max_tokens=1024,
+            max_tokens=2048,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_text}],
         )

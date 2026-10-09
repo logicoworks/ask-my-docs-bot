@@ -105,6 +105,42 @@ def list_documents() -> dict[str, int]:
     return counts
 
 
+def fetch_all_chunks() -> list[dict]:
+    """登録済みの全チャンクを、ファイル名・ページ番号順に取得する。
+
+    文書全体が十分に小さい場合は、ベクトル検索を介さず全文をLLMに渡すために使う
+    （`app.rag.qa` を参照）。上位k件の検索は「文書を横断して条件に合うものを挙げる」
+    種類の質問に弱く、全文を渡せるならその方が精度が高い。
+
+    Returns:
+        全チャンクのリスト（各要素は text/filename/page_number を持つ辞書）。
+
+    Raises:
+        VectorStoreError: ベクトルDBの取得に失敗した場合。
+    """
+    try:
+        result = _collection.get(include=["metadatas", "documents"])
+    except Exception as exc:
+        logger.warning("ベクトルDBの全件取得に失敗しました: %s", exc)
+        raise VectorStoreError("ベクトルDBの全件取得に失敗しました") from exc
+
+    # ChromaDBのget()は返却順を保証しないため、IDに埋め込んだ連番（`add_document`が付与）で
+    # 元の文書の並びに復元する。全文をLLMに渡すときに前後の文脈が崩れないようにするため。
+    chunks = [
+        {
+            "text": text,
+            "filename": metadata["filename"],
+            "page_number": metadata["page_number"],
+            "index": int(chunk_id.rsplit("::", 1)[1]),
+        }
+        for chunk_id, text, metadata in zip(
+            result["ids"], result["documents"], result["metadatas"], strict=True
+        )
+    ]
+    chunks.sort(key=lambda c: (c["filename"], c["index"]))
+    return chunks
+
+
 def delete_document(filename: str) -> int:
     """指定したファイル名の文書をベクトルDBから削除する。
 
