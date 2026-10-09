@@ -24,3 +24,6 @@ htmlcov/
 
 chroma_db/
 *.sqlite3
+
+# 個人用の作業メモ
+HANDOFF.md
