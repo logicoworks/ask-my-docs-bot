@@ -31,7 +31,21 @@ def split_into_chunks(
 
     Returns:
         ページ番号付きのチャンクのリスト。空ページはスキップされる。
+
+    Raises:
+        ValueError: `chunk_size`が0以下、`overlap`が負、または`overlap`が`chunk_size`以上の場合。
+            いずれも1回の前進量が0以下になり、分割処理が終了しなくなるため。
     """
+    if chunk_size <= 0:
+        raise ValueError(f"chunk_sizeは1以上である必要があります: {chunk_size}")
+    if overlap < 0:
+        raise ValueError(f"overlapは0以上である必要があります: {overlap}")
+    if overlap >= chunk_size:
+        raise ValueError(
+            "overlapはchunk_sizeより小さい必要があります: "
+            f"chunk_size={chunk_size}, overlap={overlap}"
+        )
+
     chunks: list[Chunk] = []
     for page_number, page_text in enumerate(pages, start=1):
         page_text = page_text.strip()
@@ -44,6 +58,11 @@ def split_into_chunks(
             chunk_text = page_text[start:end].strip()
             if chunk_text:
                 chunks.append(Chunk(text=chunk_text, page_number=page_number))
+
+            # ページ末尾まで取り切ったら終了する。これを省くと、ページ長がチャンクサイズの
+            # 倍数のときに、直前のチャンクの重複部分だけを含むチャンクが余分に作られる。
+            if end >= len(page_text):
+                break
             start += chunk_size - overlap
 
     return chunks
